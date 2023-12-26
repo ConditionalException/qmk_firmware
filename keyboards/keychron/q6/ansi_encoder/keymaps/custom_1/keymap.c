@@ -20,6 +20,7 @@
 #include "quantum.h"
 
 // User overrides
+#ifdef RGB_MATRIX_ENABLE
 #undef RGB_MATRIX_DEFAULT_MODE
 #define RGB_MATRIX_DEFAULT_MODE RGB_MATRIX_SOLID_REACTIVE_MULTIWIDE
 #undef RGB_MATRIX_DEFAULT_SAT
@@ -30,6 +31,7 @@
 #define RGB_MATRIX_DEFAULT_HUE 196
 #undef RGB_MATRIX_DEFAULT_SPD
 #define RGB_MATRIX_DEFAULT_SPD 75
+#endif
 
 // clang-format off
 
