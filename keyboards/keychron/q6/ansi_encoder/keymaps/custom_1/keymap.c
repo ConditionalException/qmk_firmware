@@ -19,6 +19,18 @@
 
 #include "quantum.h"
 
+// User overrides
+#undef RGB_MATRIX_DEFAULT_MODE
+#define RGB_MATRIX_DEFAULT_MODE RGB_MATRIX_SOLID_REACTIVE_MULTIWIDE
+#undef RGB_MATRIX_DEFAULT_SAT
+#define RGB_MATRIX_DEFAULT_SAT 255
+#undef RGB_MATRIX_DEFAULT_VAL
+#define RGB_MATRIX_DEFAULT_VAL 255
+#undef RGB_MATRIX_DEFAULT_HUE
+#define RGB_MATRIX_DEFAULT_HUE 196
+#undef RGB_MATRIX_DEFAULT_SPD
+#define RGB_MATRIX_DEFAULT_SPD 75
+
 // clang-format off
 
 enum layers{
@@ -78,6 +90,18 @@ void housekeeping_task_user(void) {
     housekeeping_task_keychron();
 }
 
+/* Basically just eeconfig_update_rgb_matrix_default but redefined with our defaults */
+static void set_usr_rgb_matrix(void) {
+#ifdef RGB_MATRIX_ENABLE
+    rgb_matrix_config.enable = RGB_MATRIX_DEFAULT_ON;
+    rgb_matrix_config.mode   = RGB_MATRIX_DEFAULT_MODE;
+    rgb_matrix_config.hsv    = (HSV){RGB_MATRIX_DEFAULT_HUE, RGB_MATRIX_DEFAULT_SAT, RGB_MATRIX_DEFAULT_VAL};
+    rgb_matrix_config.speed  = RGB_MATRIX_DEFAULT_SPD;
+    rgb_matrix_config.flags  = LED_FLAG_ALL;
+    eeconfig_update_rgb_matrix();
+#endif
+}
+
 bool process_record_user(uint16_t keycode, keyrecord_t *record) {
     if (!process_record_keychron(keycode, record)) {
         return false;
@@ -86,10 +110,20 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
     switch (keycode) {
 #ifdef RGB_MATRIX_ENABLE
         case LED_DEFAULT:
-            eeconfig_update_rgb_matrix_default();
+            set_usr_rgb_matrix();
             break;
 #endif
     }
 
     return true;
 }
+
+#ifdef RGB_MATRIX_ENABLE
+void matrix_init_user(void) {
+    // If the eeprom is blank, attempt to set it to our defaults
+    if (!eeconfig_is_enabled()) {
+        eeconfig_init();
+        set_usr_rgb_matrix();
+    }
+}
+#endif
