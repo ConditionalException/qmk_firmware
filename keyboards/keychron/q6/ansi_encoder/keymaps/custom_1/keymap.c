@@ -17,22 +17,6 @@
 #include QMK_KEYBOARD_H
 #include "keychron_common.h"
 
-#include "quantum.h"
-
-// User overrides
-#ifdef RGB_MATRIX_ENABLE
-#undef RGB_MATRIX_DEFAULT_MODE
-#define RGB_MATRIX_DEFAULT_MODE RGB_MATRIX_SOLID_REACTIVE_MULTIWIDE
-#undef RGB_MATRIX_DEFAULT_SAT
-#define RGB_MATRIX_DEFAULT_SAT 255
-#undef RGB_MATRIX_DEFAULT_VAL
-#define RGB_MATRIX_DEFAULT_VAL 255
-#undef RGB_MATRIX_DEFAULT_HUE
-#define RGB_MATRIX_DEFAULT_HUE 196
-#undef RGB_MATRIX_DEFAULT_SPD
-#define RGB_MATRIX_DEFAULT_SPD 75
-#endif
-
 // clang-format off
 
 enum layers{
@@ -62,7 +46,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
         _______,            _______,  _______,  _______,  _______,  _______,  NK_TOGG,  _______,  _______,  _______,  _______,              _______,              _______,            _______,  _______,  _______,
         _______,  _______,  _______,                                _______,                                _______,  _______,  _______,    _______,    _______,  _______,  _______,  _______,            _______,  _______),
     [WIN_BASE] = LAYOUT_ansi_109(
-        KC_ESC,   KC_F1,    KC_F2,    KC_F3,    KC_F4,    KC_F5,    KC_F6,    KC_F7,    KC_F8,    KC_F9,    KC_F10,   KC_F11,   KC_F12,     KC_MUTE,    KC_PSCR,  KC_CALC,  RGB_MOD,  KC_MYCM,  _______,  _______,  LED_DEFAULT,
+        KC_ESC,   KC_F1,    KC_F2,    KC_F3,    KC_F4,    KC_F5,    KC_F6,    KC_F7,    KC_F8,    KC_F9,    KC_F10,   KC_F11,   KC_F12,     KC_MUTE,    KC_PSCR,  KC_CALC,  RGB_MOD,  KC_MYCM,  QK_MACRO_0,  _______,  LED_DEFAULT,
         KC_GRV,   KC_1,     KC_2,     KC_3,     KC_4,     KC_5,     KC_6,     KC_7,     KC_8,     KC_9,     KC_0,     KC_MINS,  KC_EQL,     KC_BSPC,    KC_INS,   KC_HOME,  KC_PGUP,  KC_NUM,   KC_PSLS,  KC_PAST,  KC_PMNS,
         KC_TAB,   KC_Q,     KC_W,     KC_E,     KC_R,     KC_T,     KC_Y,     KC_U,     KC_I,     KC_O,     KC_P,     KC_LBRC,  KC_RBRC,    KC_BSLS,    KC_DEL,   KC_END,   KC_PGDN,  KC_P7,    KC_P8,    KC_P9,
         KC_CAPS,  KC_A,     KC_S,     KC_D,     KC_F,     KC_G,     KC_H,     KC_J,     KC_K,     KC_L,     KC_SCLN,  KC_QUOT,              KC_ENT,                                   KC_P4,    KC_P5,    KC_P6,    KC_PPLS,
@@ -92,18 +76,6 @@ void housekeeping_task_user(void) {
     housekeeping_task_keychron();
 }
 
-/* Basically just eeconfig_update_rgb_matrix_default but redefined with our defaults */
-static void set_usr_rgb_matrix(void) {
-#ifdef RGB_MATRIX_ENABLE
-    rgb_matrix_config.enable = RGB_MATRIX_DEFAULT_ON;
-    rgb_matrix_config.mode   = RGB_MATRIX_DEFAULT_MODE;
-    rgb_matrix_config.hsv    = (HSV){RGB_MATRIX_DEFAULT_HUE, RGB_MATRIX_DEFAULT_SAT, RGB_MATRIX_DEFAULT_VAL};
-    rgb_matrix_config.speed  = RGB_MATRIX_DEFAULT_SPD;
-    rgb_matrix_config.flags  = LED_FLAG_ALL;
-    eeconfig_update_rgb_matrix();
-#endif
-}
-
 bool process_record_user(uint16_t keycode, keyrecord_t *record) {
     if (!process_record_keychron(keycode, record)) {
         return false;
@@ -112,20 +84,10 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
     switch (keycode) {
 #ifdef RGB_MATRIX_ENABLE
         case LED_DEFAULT:
-            set_usr_rgb_matrix();
+            eeconfig_update_rgb_matrix_default();
             break;
 #endif
     }
 
     return true;
 }
-
-#ifdef RGB_MATRIX_ENABLE
-void matrix_init_user(void) {
-    // If the eeprom is blank, attempt to set it to our defaults
-    if (!eeconfig_is_enabled()) {
-        eeconfig_init();
-        set_usr_rgb_matrix();
-    }
-}
-#endif
